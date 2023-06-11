@@ -2112,7 +2112,7 @@ exports.init = function() {
  * @param {Function} fn the function to call back
  * @param {Object} thisObj `this` will be set to that object when executing the function
  * @param {Number} fps specify the framerate by which you want the callback to be called. (e.g. 30 = 30 times per seconds). default: 30
- */
+*/
 exports.fpsCallback = function(fn, thisObj, fps) {
    if ( fps === undefined ) {
      fps = 30;

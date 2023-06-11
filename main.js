@@ -2,7 +2,7 @@ var gamejs = require('gamejs');
 var font = require('gamejs/font');
 var screenWidth = 1200;
 var screenHeight = 600;
-var activeGame = true;
+var activeGame = false;
 var defaultFont = new font.Font("40px Arial");
 var currentMovementP1 = "Preview/balancing.gif"
 var currentMovementP2 = "PreviewP2/balancingP2.gif"
@@ -128,6 +128,8 @@ function randomMovePlayer(playerNumber){
 
 function main() {
   var display = gamejs.display.setMode([screenWidth, screenHeight]);
+  var counter = 0;
+  var docBody = document.body.innerHTML;
   console.log("Test")
 
   //Alternando os movimentos de dança a partir das teclas apertadas
@@ -161,40 +163,67 @@ function main() {
     }
   };
 
-  //Deixa o jogo atualizando a cada segundo(tick). O que é chamado aqui dentro é executo na mesma frequencia.
+  function gameLoop(msDuration) {
+    refreshCanMove()
+    changeNextMovement()
+
+    Player.registerHit(player1, player2);
+
+    player1.update(msDuration)
+    player2.update(msDuration)
+    display.blit(defaultFont.render("DANCE BATTLE", "#000000"), [400, 0]);
+    display.blit(defaultFont.render("Player 1: ", "#000000"), [0, 0]);
+    display.blit(defaultFont.render(player1.health, "#000000"), [170, 0]);
+    display.blit(defaultFont.render("Controls: W A S D", "#000000"), [0, 80]);
+    display.blit(defaultFont.render("Player 2: ", "#000000"), [850, 0]);
+    display.blit(defaultFont.render(player2.health, "#000000"), [1020, 0]);
+    display.blit(defaultFont.render("Controls: \u2191 \u2193 \u2190 \u2192", "#000000"), [850, 80]);
+
+    if(player1.health === 0 || player2.health === 0){
+      activeGame = false;
+      if (player1.health === 0){
+        display.blit(defaultFont.render("Player 1 Defeated", "#000000"), [270, 520]);
+      }
+      if (player2.health === 0){
+        display.blit(defaultFont.render("Player 2 Defeated", "#000000"), [630, 520]);
+      }
+    };    
+  }
+
+  //Deixa o jogo atualizando a cada segundo(tick). O que é chamado aqui dentro é executado na mesma frequencia.
   function gameTick(msDuration) {
+
+
     if(activeGame){
       gamejs.event.get().forEach(function(event) {
         handleEvent(event);
       });
 
-      refreshCanMove()
-      changeNextMovement()
-
-      Player.registerHit(player1, player2);
-
       display.clear();
-      player1.update(msDuration)
-      player2.update(msDuration)
-      display.blit(defaultFont.render("DANCE BATTLE", "#000000"), [400, 0]);
-      display.blit(defaultFont.render("Player 1: ", "#000000"), [0, 0]);
-      display.blit(defaultFont.render(player1.health, "#000000"), [170, 0]);
-      display.blit(defaultFont.render("Controls: W A S D", "#000000"), [0, 80]);
-      display.blit(defaultFont.render("Player 2: ", "#000000"), [850, 0]);
-      display.blit(defaultFont.render(player2.health, "#000000"), [1020, 0]);
-      display.blit(defaultFont.render("Controls: \u2191 \u2193 \u2190 \u2192", "#000000"), [850, 80]);
-
-      if(player1.health === 0 || player2.health === 0){
-        activeGame = false;
-        if (player1.health === 0){
-          display.blit(defaultFont.render("Player 1 Defeated", "#000000"), [270, 520]);
+      gameLoop(msDuration);
+    }
+    else {
+      if (counter >= 1000) {
+        document.body.innerHTML = docBody;
+        activeGame = true;
+      }
+      else {
+        //display.clear();
+        display.blit(defaultFont.render("Game about to start!", "#000000"), [400, 0])
+        gameLoop(msDuration);
+  
+        if (counter % 100 == 0) {
+          document.body.innerHTML = docBody;
+  
+          let value = (1000 - counter) / 100;
+          document.body.innerHTML += "\nBeggining in "+ value +" seconds."
         }
-        if (player2.health === 0){
-          display.blit(defaultFont.render("Player 2 Defeated", "#000000"), [630, 520]);
-        }
-      };
+  
+        counter += 1;
+      }
     };
   };
+
   var player1 = new Player(0, 3);
   var player2 = new Player(1000, 3);
   gamejs.time.fpsCallback(gameTick, this, 1960);
