@@ -1,206 +1,202 @@
 var gamejs = require('gamejs');
 var font = require('gamejs/font');
-var mask = require('gamejs/mask');
 var screenWidth = 1200;
 var screenHeight = 600;
-var spriteSize = 128;
-var numSprites = 4;
-var up = 1, down = 2, left = 4, right = 8, canChange = 16;
-var forms = [];
-var timeBetweenHits = 300;
-var timeSinceHit = 0;
 var activeGame = true;
 var defaultFont = new font.Font("40px Arial");
+var currentMovementP1 = "Preview/balancing.gif"
+var currentMovementP2 = "PreviewP2/balancingP2.gif"
+var correctMovementP1 = "Preview/balancing.gif"
+var correctMovementP2 = "PreviewP2/balancingP2.gif"
+var arrayMovesP1 = ["Preview/hips.gif", "Preview/skip.gif", "Preview/slide.gif", "Preview/snap.gif"]
+var arrayMovesP2 = ["PreviewP2/hipsP2.gif", "PreviewP2/skipP2.gif", "PreviewP2/slideP2.gif", "PreviewP2/snapP2.gif"]
+var arrayMovesShadow = ["PreviewS/hipsS.gif", "PreviewS/skipS.gif", "PreviewS/slideS.gif", "PreviewS/snapS.gif"]
+var newMoveCurrentTicks = 0
+var ticksToNewMove = 700 
+var canMove = correctMovementP1 !== "Preview/balancing.gif" && correctMovementP2  !== "PreviewP2/balancingP2.gif"
+
+/* 
+ Valores dos tamanhos dos itens na tela
+ proporcaoLarguraAlturaPlayer = 1.35897435897
+ larguraPlayer = 150
+ alturaPlayer = 150 * proporcaoLarguraAlturaPlayer
+ proporcaoLarguraAlturaTV = 1.32692307692
+ larguraPlayer = 300
+ alturaPlayer = 300 * proporcaoLarguraAlturaTV
+*/
 
 function Player(placement, formIndex){
   this.placement = placement;
-  this.form = forms[formIndex];
   this.mask = 16;
   this.hit = false;
-  this.health = 30;
+  this.health = 1500;
 };
-Player.prototype.changeForm = function(index) {
-  this.form = forms[index];
-};
+
 Player.registerHit = function(player1, player2){
-  player1Index = player1.form.index;
-  player2Index = player2.form.index;
-  if(player1Index === 0){
-    if (player2Index === 1) { 
-      player1.hit = true;
-    }else if (player2Index === 2) { 
-      player2.hit = true;
-    };
-  }else if (player1Index === 1){
-    if (player2Index === 0) { 
-      player2.hit = true;
-    }else if (player2Index === 2) { 
-      player1.hit = true;
-    };
-  }else if (player1Index === 2){
-    if (player2Index === 0) { 
-      player1.hit = true;
-    }else if (player2Index === 1) { 
-      player2.hit = true;
-    };
-  }else{
-    player1.hit = true;
+ 
+  if(arrayMovesP1.indexOf(currentMovementP1) !== arrayMovesShadow.indexOf(correctMovementP1)){
+    player1.hit = true  
   }
-  if(player2Index === 3){
-    player2.hit = true;
+  
+  if(arrayMovesP2.indexOf(currentMovementP2) !== arrayMovesShadow.indexOf(correctMovementP2)){
+    player2.hit = true  
   }
-  if(player2Index !== player1Index || player1Index === 3){
-    timeSinceHit = 0;
-  }; 
+  
 };
+
 Player.prototype.update = function(msDuration) {
-  if(this.mask & up){
-    if (this.mask & canChange) {
-      this.changeForm((this.form.index+3-1)%3);
-      this.mask &= ~canChange;
-    }
-  }
-  if(this.mask & down){
-    if (this.mask & canChange) {
-      this.changeForm((this.form.index+1)%3);
-      this.mask &= ~canChange;
-    }
-  };
-  if(this.mask & left){
-    if(this.placement > 0){
-      this.placement = this.placement - 14;
-    }
-  }else if(this.mask & right){
-    if(this.placement < 1000){
-      this.placement = this.placement + 14;
-    }
-  }
+
   if(this.hit===true){
-    this.health = this.health -3;
+    this.health = this.health - 1;
     this.hit = false;
+
   };
 };
 
-Player.prototype.draw = function(display) {
-  display.blit(this.form.image, [this.placement, 80]);
-};
+
+//Atualiza o passo de dança dos players  (no .html)
+function changeMovement(player){
+  if(player === 1){
+    document.getElementById("player1").src = currentMovementP1
+  } else {
+    document.getElementById("player2").src = currentMovementP2
+  }
+
+}
+
+//Atualiza a variavel canMove, se ela for false, os players na odevem podem mudar de passo de dança. Util para startar o game, já que o passo "Balancing" é usado apenas no start;
+function refreshCanMove(){
+
+  canMove = correctMovementP1 !== "Preview/balancing.gif" && correctMovementP2  !== "PreviewP2/balancingP2.gif"
+
+}
+
+//Atualiza os passos na TV, que os players deverão seguir (no .html). E controla a quantidade de ticks que irá demorar para o proximo passo aparecer na TV do game.
+function changeNextMovement(){
+
+  var isPlayersDancandoCerto = arrayMovesP1.indexOf(currentMovementP1) === arrayMovesShadow.indexOf(correctMovementP1) && arrayMovesP2.indexOf(currentMovementP2) === arrayMovesShadow.indexOf(correctMovementP2)
+    
+  if ( !isPlayersDancandoCerto){
+  
+    newMoveCurrentTicks = 0
+
+  }
+
+  if( newMoveCurrentTicks >= ticksToNewMove && isPlayersDancandoCerto ){
+
+    correctMovementP1 = randomMovePlayer(1)
+    correctMovementP2 = randomMovePlayer(2)
+    
+    console.log( "Nwe Moves", correctMovementP1 + correctMovementP2)
+
+    document.getElementById("p1STV").src = correctMovementP1
+    document.getElementById("p2STV").src = correctMovementP2
+
+    newMoveCurrentTicks = 0
+
+  } else if ( newMoveCurrentTicks < ticksToNewMove && isPlayersDancandoCerto) {
+
+    newMoveCurrentTicks += 1
+
+  } 
+
+}
+
+//Escolhe aleatoriamente o proximo passo que o player deverá fazer. O proximo passo nunca será o mesmo que o quye está sendo executado atualmente.
+function randomMovePlayer(playerNumber){
+
+  var possibleNextMoves = []
+  var currentMoveIndex
+  var possibleNextMoves = [...arrayMovesShadow]
+
+  if(playerNumber === 1){
+    currentMoveIndex = arrayMovesP1.indexOf(currentMovementP1)
+  } else {
+    currentMoveIndex = arrayMovesP2.indexOf(currentMovementP2)
+  }
+
+  if(currentMoveIndex > -1){
+    possibleNextMoves.splice(currentMoveIndex, 1);
+  }
+
+  let randomId = Math.floor(Math.random() * possibleNextMoves.length);
+
+  return possibleNextMoves[randomId]
+ 
+}
+
 
 function main() {
   var display = gamejs.display.setMode([screenWidth, screenHeight]);
-  var sprites = gamejs.image.load('sprites_big.png');
-  var surfaceCache = [];
-  var maskCache = [];
-  for (var i = 0; i < numSprites; i++){
-    var surface = new gamejs.Surface([spriteSize, spriteSize]);
-    var rect = new gamejs.Rect(spriteSize*i, 0, spriteSize, spriteSize);
-    var imgSize = new gamejs.Rect(0, 0, spriteSize, spriteSize);
-    surface.blit(sprites, imgSize, rect);
-    surfaceCache.push(surface);
-    var maskCacheElement = mask.fromSurface(surface);
-    maskCache.push(maskCacheElement);
-  };
-  forms = [
-    {index: 0,
-      image: surfaceCache[0],
-      mask: maskCache[0]},
-    {index: 1,
-      image: surfaceCache[1],
-      mask: maskCache[1]},
-    {index: 2,
-      image: surfaceCache[2],
-      mask: maskCache[2]},
-    {index: 3,
-      image: surfaceCache[3],
-      mask: maskCache[3]}
-  ];
+  console.log("Test")
 
+  //Alternando os movimentos de dança a partir das teclas apertadas
   function handleEvent(event) {
-    if(event.type === gamejs.event.KEY_DOWN){ 
+    if(canMove){
       if(event.key === gamejs.event.K_UP){
-        player2.mask |= up;
+       currentMovementP2 = "PreviewP2/hipsP2.gif"
+       changeMovement(2)
       }else if(event.key === gamejs.event.K_DOWN){
-        player2.mask |= down;
+       currentMovementP2 = "PreviewP2/skipP2.gif"
+       changeMovement(2)
       }else if(event.key === gamejs.event.K_LEFT){
-        player2.mask |= left;
-        player2.mask &= ~right;
+       currentMovementP2 = "PreviewP2/slideP2.gif"
+       changeMovement(2)
       }else if(event.key === gamejs.event.K_RIGHT){
-        player2.mask |= right;
-        player2.mask &= ~left;
+       currentMovementP2 = "PreviewP2/snapP2.gif"
+       changeMovement(2)
       }else if(event.key === gamejs.event.K_w){
-        player1.mask |= up;
+       currentMovementP1 = "Preview/hips.gif"
+       changeMovement(1)
       }else if(event.key === gamejs.event.K_s){
-        player1.mask |= down;
+       currentMovementP1 = "Preview/skip.gif"
+       changeMovement(1)
       }else if(event.key === gamejs.event.K_a){
-        player1.mask |= left;
-        player1.mask &= ~right;
+       currentMovementP1 = "Preview/slide.gif"
+       changeMovement(1)
       }else if(event.key === gamejs.event.K_d){
-        player1.mask |= right;
-        player1.mask &= ~left;
-      }
-    } else if(event.type === gamejs.event.KEY_UP){ 
-      if(event.key === gamejs.event.K_UP){
-        player2.mask &= ~up;
-        player2.mask |= canChange;
-      }else if(event.key === gamejs.event.K_DOWN){
-        player2.mask &= ~down;
-        player2.mask |= canChange;
-      }else if(event.key === gamejs.event.K_RIGHT){
-        player2.mask &= ~right;
-      }else if(event.key === gamejs.event.K_LEFT){
-        player2.mask &= ~left;
-      }else if(event.key === gamejs.event.K_w){
-        player1.mask &= ~up;
-        player1.mask |= canChange;
-      }else if(event.key === gamejs.event.K_a){
-        player1.mask &= ~left;
-      }else if(event.key === gamejs.event.K_s){
-        player1.mask &= ~down;
-        player1.mask |= canChange;
-      }else if(event.key === gamejs.event.K_d){
-        player1.mask &= ~right;
-      }
-    }    
+       currentMovementP1 = "Preview/snap.gif"
+       changeMovement(1)
+      }   
+    }
   };
 
+  //Deixa o jogo atualizando a cada segundo(tick). O que é chamado aqui dentro é executo na mesma frequencia.
   function gameTick(msDuration) {
     if(activeGame){
       gamejs.event.get().forEach(function(event) {
         handleEvent(event);
       });
+
+      refreshCanMove()
+      changeNextMovement()
+
+      Player.registerHit(player1, player2);
+
       display.clear();
-      if(timeSinceHit > timeBetweenHits){
-        var hasMaskOverlap = player1.form.mask.overlap(player2.form.mask, [player1.placement - player2.placement, 0]);
-        if (hasMaskOverlap) {
-          Player.registerHit(player1, player2);
-        };
-      }else{
-        timeSinceHit +=msDuration;
-      };
-      player1.update(msDuration);
-      player2.update(msDuration);
-      display.blit(defaultFont.render("ROCK PAPER SCISSORS", "#000000"), [300, 0]);
-      display.blit(defaultFont.render("Player 1: ", "#000000"), [0, 240]);
-      display.blit(defaultFont.render(player1.health, "#000000"), [170, 240]);
-      display.blit(defaultFont.render("Controls: W A S D", "#000000"), [0, 280]);
-      display.blit(defaultFont.render("Player 2: ", "#000000"), [600, 240]);
-      display.blit(defaultFont.render(player2.health, "#000000"), [770, 240]);
-      display.blit(defaultFont.render("Controls: \u2191 \u2193 \u2190 \u2192", "#000000"), [600, 280]);
-      player1.draw(display);
-      player2.draw(display);
+      player1.update(msDuration)
+      player2.update(msDuration)
+      display.blit(defaultFont.render("DANCE BATTLE", "#000000"), [400, 0]);
+      display.blit(defaultFont.render("Player 1: ", "#000000"), [0, 0]);
+      display.blit(defaultFont.render(player1.health, "#000000"), [170, 0]);
+      display.blit(defaultFont.render("Controls: W A S D", "#000000"), [0, 80]);
+      display.blit(defaultFont.render("Player 2: ", "#000000"), [850, 0]);
+      display.blit(defaultFont.render(player2.health, "#000000"), [1020, 0]);
+      display.blit(defaultFont.render("Controls: \u2191 \u2193 \u2190 \u2192", "#000000"), [850, 80]);
+
       if(player1.health === 0 || player2.health === 0){
         activeGame = false;
         if (player1.health === 0){
-          display.blit(defaultFont.render("Player 1 Defeated", "#000000"), [0, 320]);
+          display.blit(defaultFont.render("Player 1 Defeated", "#000000"), [270, 520]);
         }
         if (player2.health === 0){
-          display.blit(defaultFont.render("Player 2 Defeated", "#000000"), [600, 320]);
+          display.blit(defaultFont.render("Player 2 Defeated", "#000000"), [630, 520]);
         }
       };
     };
   };
   var player1 = new Player(0, 3);
   var player2 = new Player(1000, 3);
-  gamejs.time.fpsCallback(gameTick, this, 60);
+  gamejs.time.fpsCallback(gameTick, this, 1960);
 };
-gamejs.preload(['sprites_big.png']);
 gamejs.ready(main);
