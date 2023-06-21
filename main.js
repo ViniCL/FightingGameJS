@@ -1,7 +1,7 @@
 var gamejs = require('gamejs');
 var font = require('gamejs/font');
-var screenWidth = 1200;
-var screenHeight = 600;
+var screenWidth = 1900;
+var screenHeight = 930;
 var activeGame = true;
 var defaultFont = new font.Font("40px Arial");
 var currentMovementP1 = "Preview/balancing.gif"
@@ -176,21 +176,22 @@ function main() {
       display.clear();
       player1.update(msDuration)
       player2.update(msDuration)
-      display.blit(defaultFont.render("DANCE BATTLE", "#000000"), [400, 0]);
-      display.blit(defaultFont.render("Player 1: ", "#000000"), [0, 0]);
-      display.blit(defaultFont.render(player1.health, "#000000"), [170, 0]);
-      display.blit(defaultFont.render("Controls: W A S D", "#000000"), [0, 80]);
-      display.blit(defaultFont.render("Player 2: ", "#000000"), [850, 0]);
-      display.blit(defaultFont.render(player2.health, "#000000"), [1020, 0]);
-      display.blit(defaultFont.render("Controls: \u2191 \u2193 \u2190 \u2192", "#000000"), [850, 80]);
+      display.blit(defaultFont.render("DANCE BATTLE", "#000000"), [930, 35]);
+      display.blit(defaultFont.render("1 ", "#000000"), [170, 150]);
+      display.blit(defaultFont.render(player1.health, "#000000"), [410, 240]);
+      display.blit(defaultFont.render("Controls: W A S D", "#000000"), [180, 35]);
+      display.blit(defaultFont.render("2 ", "#000000"), [1470, 150]);
+      display.blit(defaultFont.render(player2.health, "#000000"), [1720, 240]);
+      display.blit(defaultFont.render("Controls: \u2191 \u2193 \u2190 \u2192", "#000000"), [1540, 35]);
 
       if(player1.health === 0 || player2.health === 0){
         activeGame = false;
         if (player1.health === 0){
-          display.blit(defaultFont.render("Player 1 Defeated", "#000000"), [270, 520]);
+          display.blit(defaultFont.render("Player 1 Defeated", "#ffffff"), [800, 400]);
         }
         if (player2.health === 0){
-          display.blit(defaultFont.render("Player 2 Defeated", "#000000"), [630, 520]);
+          display.blit(defaultFont.render("Player 2 Defeated", "#ffffff"), [800, 470]);
+          display.blit(Image.render(""))
         }
       };
     };
