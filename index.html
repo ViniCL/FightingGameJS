@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <head>
   <title>Fighting</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
   <script src="yabble.js"></script>
   <script src="game.js"></script>
-  <script>
-      require.setModuleRoot('./');
-      require.run('main')
-  </script>
+  <script src="script.js"></script>
 </head>
 <body>
-  <div id="gjs-loader">
-   Loading...
+  <div style="display:flex; flex-direction: row; align-items: center;">
+    <button id="play-button" class="play-button" onclick="playAudio()">
+      <i class="fas fa-play" style="font-size: 70px;"></i>
+    </button>
+    <audio id="audio">
+      <source src="cerol.mp3" type="audio/mpeg">
+    </audio>
+    <div id="gjs-loader">
+      Relaxa e dá um play na música, ta carregando...
+    </div>
   </div>
   <img id="imgBackground" src="back.gif" alt="Palco" width="1900" height="930" style="position: absolute; z-index: -3;">
   <img id="player1" src="Preview\balancing.gif" alt="p1" width="250" height="340" style="position: absolute ; z-index: 1; top:590px; left: 450px">
